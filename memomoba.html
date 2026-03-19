@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>メモ帳</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        /* スライダー部分の見た目 */
+        .controls { margin-bottom: 15px; background: #f0f0f0; padding: 10px 20px; border-radius: 10px; }
+        /* テキストエリア（サイズはJSで動的に変わります） */
+        textarea { width: 65%; height: 530px; padding: 10px; border: 2px solid #ccc; border-radius: 8px; }
+        button { margin-top: 20px; padding: 15px 30px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>メモ帳</h1>
+
+    <!-- 1. サイズ調整用のスライダーを追加 -->
+    <div class="controls">
+        文字サイズ：
+        <input type="range" id="sizeSlider" min="16" max="100" value="16" oninput="changeSize(this.value)">
+        <span id="sizeDisplay">16</span>px
+    </div>
+
+    <textarea id="memoArea" placeholder="ここにメモを入力してください...">・</textarea>
+    <br>
+    <button onclick="saveMemo()">保存する</button>
+
+    <script>
+        const memoArea = document.getElementById("memoArea");
+        const sizeSlider = document.getElementById("sizeSlider");
+        const sizeDisplay = document.getElementById("sizeDisplay");
+
+        // 2. ページ読み込み時に「メモ」と「フォントサイズ」を復元
+        window.onload = function() {
+            const savedData = localStorage.getItem("myMemo");
+            if (savedData) memoArea.value = savedData;
+
+            const savedSize = localStorage.getItem("myFontSize");
+            if (savedSize) {
+                changeSize(savedSize); // 保存されたサイズを適用
+                sizeSlider.value = savedSize; // スライダーの位置も戻す
+            }
+        };
+
+        // 3. スライダーを動かしたときにリアルタイムでサイズを変える関数
+        function changeSize(newSize) {
+            memoArea.style.fontSize = newSize + "px"; // テキストエリアの文字サイズを変更
+            sizeDisplay.innerText = newSize; // 横の数字表示を更新
+        }
+
+        // 4. 保存ボタンを押したときに「サイズ」も一緒に保存する
+        function saveMemo() {
+            localStorage.setItem("myMemo", memoArea.value);
+            localStorage.setItem("myFontSize", sizeSlider.value); // サイズも保存！
+            alert("メモと設定を保存しました。");
+        }
+        memoArea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                // 1. Enterが押されたら、デフォルトの改行動作を一度キャンセル
+                e.preventDefault();
+
+                // 2. 今のカーソル位置を取得
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                const value = this.value;
+
+                // 3. 「改行 + ・」を今の位置に差し込む
+                this.value = value.substring(0, start) + "\n・" + value.substring(end);
+
+                // 4. カーソルの位置を「・」の直後に移動させる
+                this.selectionStart = this.selectionEnd = start + 2;
+            }
+        });
+    </script>
+
+</body>
+</html>
